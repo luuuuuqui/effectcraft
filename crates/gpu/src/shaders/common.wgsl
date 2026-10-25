@@ -166,6 +166,53 @@ fn round_away(x: f32) -> f32 {
     return t;
 }
 
+// IEEE round-to-nearest-even division for normal inputs and results. WGSL division and
+// fma residual corrections may round differently across drivers, flipping hard thresholds.
+// Divide the 24-bit significands in three integer chunks (7 + 8 + 8 fraction bits), then
+// round from the exact remainder. Each shifted remainder fits in u32; no fp64 is needed.
+// Exceptional/subnormal values retain the backend's usual division behaviour.
+fn div_rte(a: f32, b: f32) -> f32 {
+    let ab = bitcast<u32>(a);
+    let bb = bitcast<u32>(b);
+    let ae = (ab >> 23u) & 255u;
+    let be = (bb >> 23u) & 255u;
+    if (ae == 0u || ae == 255u || be == 0u || be == 255u) {
+        return a / b;
+    }
+    let sign_bits = (ab ^ bb) & 0x80000000u;
+    let divisor = (bb & 0x007fffffu) | 0x00800000u;
+    var remainder = (ab & 0x007fffffu) | 0x00800000u;
+    var exp_bits = i32(ae) - i32(be) + 127;
+    if (remainder < divisor) {
+        remainder <<= 1u;
+        exp_bits -= 1;
+    }
+    if (exp_bits <= 0 || exp_bits >= 255) {
+        return a / b;
+    }
+    remainder -= divisor;
+    var quotient = 1u;
+    for (var chunk = 0u; chunk < 3u; chunk++) {
+        let shift = select(8u, 7u, chunk == 0u);
+        let numerator = remainder << shift;
+        let digit = numerator / divisor;
+        quotient = (quotient << shift) | digit;
+        remainder = numerator - digit * divisor;
+    }
+    let twice = remainder << 1u;
+    if (twice > divisor || (twice == divisor && (quotient & 1u) != 0u)) {
+        quotient += 1u;
+    }
+    if (quotient == 0x01000000u) {
+        quotient >>= 1u;
+        exp_bits += 1;
+    }
+    if (exp_bits >= 255) {
+        return a / b;
+    }
+    return bitcast<f32>(sign_bits | (u32(exp_bits) << 23u) | (quotient & 0x007fffffu));
+}
+
 // f32::rem_euclid(1.0).
 fn fract_euclid(x: f32) -> f32 {
     return x - floor(x);

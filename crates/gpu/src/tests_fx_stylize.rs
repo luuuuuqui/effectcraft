@@ -21,6 +21,36 @@ fn pt(x: f64, y: f64) -> Value {
 }
 
 #[test]
+fn posterize_preserves_thresholds_and_adjacent_float_values() {
+    let Some(g) = crate::tests::gpu() else { return };
+    let spec = effectcraft_effects::find("ec.stylize.posterize").unwrap();
+    for level in [2, 4, 9, 255] {
+        let mut pixels = Vec::new();
+        for alpha in [1.0_f32, 0.5, 77.0 / 255.0, 108.0 / 255.0, 0.125, 1e-5] {
+            for step in 0..level - 1 {
+                let boundary = ((step as f32 + 0.5) / (level - 1) as f32) * alpha;
+                for value in [boundary.next_down(), boundary, boundary.next_up()] {
+                    pixels.push([value, -0.25 * alpha, 1.25 * alpha, alpha]);
+                }
+            }
+        }
+        let width = pixels.len() as u32;
+        let size = [width as f64, 1.0];
+        let mut params =
+            effectcraft_effects::Params { values: spec.params.iter().map(|p| (p.id.to_string(), effectcraft_effects::default_value(p, size))).collect() };
+        params.values.insert("level".into(), n(level as f64));
+        let ctx = || effectcraft_effects::EffectCtx { params: &params, time: 0.0, layer_size: size, seed: 0, adjustment: false, env: Default::default() };
+        let buf = effectcraft_effects::Buf { img: effectcraft_raster::Image { width, height: 1, data: pixels }, offset: [0.0; 2], scale: 1.0 };
+        let cpu = (spec.render)(&ctx(), buf.clone());
+        let gpu = effectcraft_render::Accelerator::effects(g, &[effectcraft_render::FxStep { spec, ctx: ctx() }], &buf, None).unwrap();
+        for (i, (want, got)) in cpu.img.data.iter().zip(&gpu.img.data).enumerate() {
+            let error = want.iter().zip(got).map(|(a, b)| (a - b).abs()).fold(0.0_f32, f32::max);
+            assert!(error <= want[3] * 2e-6, "level {level}, pixel {i}, input {:?}: CPU {want:?}, GPU {got:?}", buf.img.data[i]);
+        }
+    }
+}
+
+#[test]
 fn posterize_thresholds_strobe_vignette() {
     effect_case("ec.stylize.posterize", &[("level", n(4.0))]);
     effect_case("ec.stylize.posterize", &[("level", n(9.0))]);

@@ -14,17 +14,6 @@ fn fxn_pixel(gid: vec3<u32>) -> vec2<i32> {
     return p;
 }
 
-// Refine approximate GPU division with two fma residual corrections before restoring
-// the median's straight colour. Driver float optimisations can still affect rounding;
-// the fixed median levels instead come from a CPU-rounded lookup table.
-fn fxn_div4(a: vec4<f32>, b: vec4<f32>) -> vec4<f32> {
-    let q = a / b;
-    let r = fma(-q, b, a);
-    let corrected = fma(r, 1.0 / b, q);
-    let residual = fma(-corrected, b, a);
-    return fma(residual, 1.0 / b, corrected);
-}
-
 // util::unpremul: (straight colour, alpha).
 fn fxn_unpremul(p: vec4<f32>) -> vec4<f32> {
     if (p.w > 1e-6) {
@@ -154,7 +143,8 @@ fn fxn_median_px(o: vec4<f32>, m: vec4<f32>, on_alpha: bool) -> vec4<f32> {
     if (m.w <= 1e-4) {
         return o;
     }
-    return vec4<f32>(min(fxn_div4(m, vec4<f32>(m.w)).xyz, vec3<f32>(1.0)) * o.w, o.w);
+    let colour = vec3<f32>(div_rte(m.x, m.w), div_rte(m.y, m.w), div_rte(m.z, m.w));
+    return vec4<f32>(min(colour, vec3<f32>(1.0)) * o.w, o.w);
 }
 
 // src = the layer, aux = the median. u[0] = (mode, operate on alpha): 0 Median, 1 Dust &

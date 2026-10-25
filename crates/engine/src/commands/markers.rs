@@ -142,12 +142,17 @@ fn locked(c: &Comp, o: Owner) -> bool {
 /// Apply the dialog fields in `p` to `m`. `time`/`duration` are comp seconds.
 fn apply_fields(c: &Comp, o: Owner, m: &mut Marker, p: &Value, cmd: &str) -> Result<()> {
     let fr = c.frame_rate;
+    // Interactive edits snap by default; scripts/importers can preserve subframe source times.
+    let time = |seconds: f64| {
+        let t = Tick::from_seconds_f64(seconds.max(0.0));
+        if b_p(p, "snap").unwrap_or(true) { fr.snap_nearest(t) } else { t }
+    };
     if let Some(t) = f_p(p, "time") {
-        let ct = fr.snap_nearest(Tick::from_seconds_f64(t.max(0.0)));
+        let ct = time(t);
         m.time = to_marker_time(c, o, ct);
     }
     if let Some(d) = f_p(p, "duration") {
-        m.duration = fr.snap_nearest(Tick::from_seconds_f64(d.max(0.0)));
+        m.duration = time(d);
     }
     if let Some(v) = str_p(p, "comment") {
         m.comment = v.into();
@@ -360,7 +365,7 @@ pub fn specs() -> Vec<CommandSpec> {
             "Marker Settings",
             [],
             None,
-            "{layer? (omit: comp marker), index? (0-based) | at? (comp s) | new?: true, time? (comp s), duration? (s), comment?, chapter?, url?, frameTarget?, cuePoint?: {name, navigation?, params?: [[name, value]…]} | null, protected?, label?}",
+            "{layer? (omit: comp marker), index? (0-based) | at? (comp s) | new?: true, time? (comp s), duration? (s), snap?: true (false preserves subframe times), comment?, chapter?, url?, frameTarget?, cuePoint?: {name, navigation?, params?: [[name, value]…]} | null, protected?, label?}",
             has_comp,
             set
         ),

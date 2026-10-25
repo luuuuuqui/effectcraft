@@ -48,6 +48,21 @@ fn comp_marker_dialog_fields_and_undo() {
 }
 
 #[test]
+fn imported_markers_preserve_subframe_times_without_changing_interactive_snapping() {
+    let (mut s, _) = setup();
+    s.execute("markers.set", json!({"new": true, "time": 0.75, "duration": 0.25, "snap": false})).unwrap();
+    let markers = s.execute("markers.list", json!({})).unwrap();
+    assert_eq!(markers[0]["time"], 0.75);
+    assert_eq!(markers[0]["duration"], 0.25);
+    s.execute("markers.set", json!({"index": 0, "time": 0.75, "duration": 0.25})).unwrap();
+    let markers = s.execute("markers.list", json!({})).unwrap();
+    assert_ne!(markers[0]["time"], 0.75);
+    assert_ne!(markers[0]["duration"], 0.25);
+    s.execute("edit.undo", json!({})).unwrap();
+    assert_eq!(s.execute("markers.list", json!({})).unwrap()[0]["duration"], 0.25);
+}
+
+#[test]
 fn drag_merges_into_one_undo_step_and_markers_stay_sorted() {
     let (mut s, _) = setup();
     for t in [0.5, 2.0] {

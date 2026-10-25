@@ -1057,7 +1057,7 @@ MarkerProperty.prototype = {
   setValueAtTime: function (t, mv) {
     t = __num(t, "time");
     if (!(mv instanceof MarkerValue)) throw __err("value must be a MarkerValue");
-    var p = this.__p({ time: t, duration: mv.duration || 0, comment: mv.comment, chapter: mv.chapter, url: mv.url, frameTarget: mv.frameTarget, protected: !!mv.protectedRegion, label: mv.label || 0 });
+    var p = this.__p({ time: t, duration: mv.duration || 0, snap: false, comment: mv.comment, chapter: mv.chapter, url: mv.url, frameTarget: mv.frameTarget, protected: !!mv.protectedRegion, label: mv.label || 0 });
     p.cuePoint = (mv.cuePointName || mv.__params.length) ? { name: mv.cuePointName, navigation: !mv.eventCuePoint, params: mv.__params } : null;
     var l = this.__list(), at = -1;
     for (var i = 0; i < l.length; i++) if (Math.abs(l[i].time - t) < 1e-6) at = i;

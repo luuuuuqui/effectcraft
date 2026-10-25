@@ -1,5 +1,9 @@
 <h1 align="center">EffectCraft</h1>
 
+> This [fork](https://github.com/luuuuuqui/effectcraft) includes `.aep` / `.aepx` import
+> adapted from [glumbis's fork](https://github.com/glumbis/effectcraft).
+> Build with `--features aep` and install Python with `py-aep`. See [FORK.md](FORK.md).
+
 <p align="center">
   <b>Motion graphics and visual effects; an open-source, clean-room reimplementation of Adobe After Effects, rebuilt in pure Rust.</b>
 </p>
@@ -193,7 +197,7 @@ emerge --ask media-video/effectcraft-bin
 To build it yourself you need [Rust](https://rustup.rs/) 1.95 or newer.
 
 ```sh
-git clone https://github.com/storytold/effectcraft
+git clone https://github.com/luuuuuqui/effectcraft
 cd effectcraft
 cargo run --release -p effectcraft          # the app (add `-- --demo` to open the demo project)
 cargo run --release -p effectcraft-cli -- render --out intro.mp4    # render the demo headless
@@ -214,8 +218,9 @@ exists, including all of its effects, but existing is not the same as behaving e
 Effects, and we haven't measured that yet. Today it's a good place to try things and to tell us
 what breaks. It isn't yet a replacement for After Effects on client work. In particular:
 
-- **After Effects projects can't be opened.** Projects are saved as `.ecproj`, readable versioned
-  JSON, but EffectCraft can't open `.aep` / `.aepx` files, and After Effects plug-ins don't run.
+- **After Effects project import is optional in this fork.** Builds with `--features aep` can
+  import `.aep` / `.aepx` through an external Python converter; see [setup and limits](tools/aep-import/README.md).
+  Projects are saved as `.ecproj`, readable versioned JSON. After Effects plug-ins don't run.
 - **Behaviour still differs from After Effects in places.** Nothing yet compares our renders with
   After Effects automatically, so please report differences.
 - **macOS is the most tested platform.** Linux and Windows users have hit basic interaction

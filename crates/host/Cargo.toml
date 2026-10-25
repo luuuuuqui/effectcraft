@@ -23,6 +23,10 @@ effectcraft-plugin = { workspace = true }
 [target.'cfg(not(target_arch = "wasm32"))'.dependencies]
 effectcraft-plugin = { workspace = true, features = ["wasm"] }
 
+[features]
+# External Python 3 + py-aep converter; native builds only.
+aep = []
+
 [dev-dependencies]
 serde_json = { workspace = true }
 effectcraft-psd = { workspace = true }

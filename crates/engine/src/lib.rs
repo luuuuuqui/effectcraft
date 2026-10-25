@@ -472,6 +472,8 @@ pub struct Session {
     /// Loads WebAssembly effect plug-ins (set by the host that links `effectcraft-plugin` with
     /// its runtime): `effect.plugins.load`.
     pub plugin_loader: Option<PluginLoader>,
+    /// Converts an After Effects project into JavaScript that rebuilds it (`file.importAep`).
+    pub aep_converter: Option<AepConverter>,
     /// ScriptUI windows and panels opened by scripts (see [`scriptui`]).
     pub script_ui: scriptui::ScriptUi,
     /// The last physical-memory reading (Settings ▸ Memory & CPU budgets); `None` = unknown
@@ -540,6 +542,9 @@ pub struct ScriptRequest<'a> {
 /// column, file} | null}`.
 pub type ScriptRunner = fn(&mut Session, &ScriptRequest) -> Value;
 
+/// Converts an `.aep` / `.aepx` file into JavaScript for the scripting object model.
+pub type AepConverter = fn(&str) -> std::result::Result<String, String>;
+
 /// Loads one WebAssembly effect plug-in (`bytes`, `source` path) into the effect registry and
 /// describes it (`{id, name, category, version, api, params}`).
 pub type PluginLoader = fn(&[u8], &str) -> std::result::Result<Value, String>;
@@ -592,6 +597,7 @@ impl Default for Session {
             snapshot: None,
             script: None,
             plugin_loader: None,
+            aep_converter: None,
             script_ui: scriptui::ScriptUi::default(),
             sys_memory: None,
             key_move: None,

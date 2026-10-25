@@ -14,6 +14,9 @@ pub use effectcraft_script as script;
 
 pub mod app_dirs;
 
+#[cfg(all(feature = "aep", not(target_arch = "wasm32")))]
+mod aep;
+
 struct MediaImporter;
 
 impl Importer for MediaImporter {
@@ -92,6 +95,8 @@ pub fn session() -> Session {
         expr_check: Some(effectcraft_expr::check_syntax),
         script: Some(effectcraft_script::runner),
         script_ui: effectcraft_engine::scriptui::ScriptUi { dispatch: Some(effectcraft_script::dispatch_ui), ..Default::default() },
+        #[cfg(all(feature = "aep", not(target_arch = "wasm32")))]
+        aep_converter: Some(aep::convert),
         plugin_loader: effectcraft_plugin::wasm_available().then_some(effectcraft_plugin::loader as effectcraft_engine::PluginLoader),
         ..Default::default()
     }

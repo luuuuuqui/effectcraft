@@ -412,6 +412,7 @@ fn hover(h: &mut Harness<'_, EffectcraftApp>, pos: egui::Pos2) {
 #[test]
 fn right_click_in_effect_controls_shows_the_effect_menu() {
     let mut s = Session::default();
+    s.prefs.general.language = "en".into();
     s.execute("comp.new", json!({"name": "Main", "width": 320, "height": 180, "frameRate": 30, "duration": 4})).unwrap();
     let a = s.execute("layer.newSolid", json!({"name": "A", "color": "#406080"})).unwrap()["layer"].as_u64().unwrap();
     let b = s.execute("layer.newSolid", json!({"name": "B", "color": "#804060"})).unwrap()["layer"].as_u64().unwrap();

@@ -10,6 +10,7 @@ use serde_json::json;
 
 fn harness() -> (Harness<'static, EffectcraftApp>, u64) {
     let mut s = Session::default();
+    s.prefs.general.language = "en".into();
     s.execute("comp.new", json!({"name": "Main", "width": 320, "height": 180, "duration": 4, "fps": 24})).unwrap();
     let comp = s.active_comp_id().unwrap().0;
     let mut h = Harness::builder().with_size(egui::vec2(1600.0, 1000.0)).build_eframe(|_| EffectcraftApp::new(s));

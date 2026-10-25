@@ -10,6 +10,7 @@ use serde_json::json;
 
 fn harness(w: f32, h: f32) -> Harness<'static, EffectcraftApp> {
     let mut s = Session::default();
+    s.prefs.general.language = "en".into();
     s.execute("file.openDemoProject", json!({})).unwrap();
     let mut h = Harness::builder().with_size(vec2(w, h)).build_eframe(|_| EffectcraftApp::new(s));
     h.run_steps(3);

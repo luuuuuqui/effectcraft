@@ -16,6 +16,7 @@ const F: i64 = 8_467_200_000;
 /// A 4 s, 30 fps comp with three solids, each with Opacity keys at 0 s and 1 s, revealed.
 fn harness() -> (Harness<'static, EffectcraftApp>, Vec<u64>) {
     let mut s = Session::default();
+    s.prefs.general.language = "en".into();
     s.execute("comp.new", json!({"name": "Stagger", "width": 320, "height": 180, "frameRate": 30, "duration": 4})).unwrap();
     let mut ids = vec![];
     for i in 0..3 {

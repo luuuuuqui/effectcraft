@@ -357,6 +357,7 @@ fn graph_editor_buttons_that_do_not_fit_move_to_the_more_menu() {
 #[test]
 fn properties_panel_edits_every_selected_layer() {
     let mut s = Session::default();
+    s.prefs.general.language = "en".into();
     s.execute("comp.new", json!({"name": "Three", "width": 320, "height": 180, "frameRate": 30, "duration": 4})).unwrap();
     let mut ids = vec![];
     for (i, c) in ["#e04020", "#20e040", "#2040e0"].iter().enumerate() {

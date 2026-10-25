@@ -14,6 +14,7 @@ use serde_json::json;
 
 fn harness() -> Harness<'static, EffectcraftApp> {
     let mut s = Session::default();
+    s.prefs.general.language = "en".into();
     s.execute("comp.new", json!({"name": "Panels", "width": 320, "height": 180, "duration": 4})).unwrap();
     s.execute("layer.newSolid", json!({"name": "Plate", "color": "#406080"})).unwrap();
     let mut h = Harness::builder().with_size(egui::vec2(1600.0, 1000.0)).build_eframe(|_| EffectcraftApp::new(s));

@@ -12,6 +12,7 @@ use serde_json::json;
 /// A 10-minute comp with one solid, zoomed in on its start.
 fn harness() -> (Harness<'static, EffectcraftApp>, u64) {
     let mut s = Session::default();
+    s.prefs.general.language = "en".into();
     s.execute("comp.new", json!({"name": "Long", "width": 320, "height": 180, "frameRate": 30, "duration": 600})).unwrap();
     let layer = s.execute("layer.newSolid", json!({"name": "Plate", "color": "#406080"})).unwrap()["layer"].as_u64().unwrap();
     let mut app = EffectcraftApp::new(s);
